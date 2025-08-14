@@ -4,6 +4,7 @@ import auth from "./lib/plugins/auth";
 import contact from "./lib/plugins/contact";
 import room from "./lib/plugins/room";
 import message from "./lib/plugins/message";
+import swagger from "@elysiajs/swagger";
 
 const app = new Elysia({ prefix: "/api/v1" })
   .use(
@@ -12,6 +13,7 @@ const app = new Elysia({ prefix: "/api/v1" })
       withTimestamp: true, // optional (default: false)
     })
   )
+  .use(swagger())
   .use(auth)
   .use(contact)
   .use(room)
