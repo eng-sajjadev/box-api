@@ -159,6 +159,10 @@ export const ContactWhereUnique = t.Recursive(
                 { userId: t.String(), contactId: t.String() },
                 { additionalProperties: false },
               ),
+              userId_name: t.Object(
+                { userId: t.String(), name: t.String() },
+                { additionalProperties: false },
+              ),
             },
             { additionalProperties: false },
           ),
@@ -170,6 +174,12 @@ export const ContactWhereUnique = t.Recursive(
             t.Object({
               userId_contactId: t.Object(
                 { userId: t.String(), contactId: t.String() },
+                { additionalProperties: false },
+              ),
+            }),
+            t.Object({
+              userId_name: t.Object(
+                { userId: t.String(), name: t.String() },
                 { additionalProperties: false },
               ),
             }),

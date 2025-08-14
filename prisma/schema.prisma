@@ -75,6 +75,7 @@ model Contact {
   contactUser User @relation("contactOfUser", fields: [contactId], references: [id])
 
   @@unique([userId, contactId])
+  @@unique([userId, name])
   @@index([userId])
 }
 
