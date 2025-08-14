@@ -2,6 +2,7 @@ import { logger } from "@tqman/nice-logger";
 import { Elysia } from "elysia";
 import auth from "./lib/plugins/auth";
 import contact from "./lib/plugins/contact";
+import room from "./lib/plugins/room";
 
 const app = new Elysia({ prefix: "/api/v1" })
   .use(
@@ -12,6 +13,7 @@ const app = new Elysia({ prefix: "/api/v1" })
   )
   .use(auth)
   .use(contact)
+  .use(room)
   .get("/", () => "Hello Elysia")
   .listen(3000);
 
