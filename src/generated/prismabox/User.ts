@@ -10,7 +10,7 @@ export const UserPlain = t.Object(
     email: __nullable__(t.String()),
     phone: __nullable__(t.String()),
     password: t.String(),
-    name: t.String(),
+    username: t.String(),
     avatar: __nullable__(t.String()),
     status: __nullable__(t.String()),
     lastSeen: __nullable__(t.Date()),
@@ -254,7 +254,7 @@ export const UserPlainInputCreate = t.Object(
     email: t.Optional(__nullable__(t.String())),
     phone: t.Optional(__nullable__(t.String())),
     password: t.String(),
-    name: t.String(),
+    username: t.String(),
     avatar: t.Optional(__nullable__(t.String())),
     status: t.Optional(__nullable__(t.String())),
     lastSeen: t.Optional(__nullable__(t.Date())),
@@ -271,7 +271,7 @@ export const UserPlainInputUpdate = t.Object(
     email: t.Optional(__nullable__(t.String())),
     phone: t.Optional(__nullable__(t.String())),
     password: t.Optional(t.String()),
-    name: t.Optional(t.String()),
+    username: t.Optional(t.String()),
     avatar: t.Optional(__nullable__(t.String())),
     status: t.Optional(__nullable__(t.String())),
     lastSeen: t.Optional(__nullable__(t.Date())),
@@ -760,7 +760,7 @@ export const UserWhere = t.Partial(
           email: t.String(),
           phone: t.String(),
           password: t.String(),
-          name: t.String(),
+          username: t.String(),
           avatar: t.String(),
           status: t.String(),
           lastSeen: t.Date(),
@@ -783,7 +783,12 @@ export const UserWhereUnique = t.Recursive(
       [
         t.Partial(
           t.Object(
-            { id: t.String(), email: t.String(), phone: t.String() },
+            {
+              id: t.String(),
+              email: t.String(),
+              phone: t.String(),
+              username: t.String(),
+            },
             { additionalProperties: false },
           ),
           { additionalProperties: false },
@@ -793,6 +798,7 @@ export const UserWhereUnique = t.Recursive(
             t.Object({ id: t.String() }),
             t.Object({ email: t.String() }),
             t.Object({ phone: t.String() }),
+            t.Object({ username: t.String() }),
           ],
           { additionalProperties: false },
         ),
@@ -817,7 +823,7 @@ export const UserWhereUnique = t.Recursive(
               email: t.String(),
               phone: t.String(),
               password: t.String(),
-              name: t.String(),
+              username: t.String(),
               avatar: t.String(),
               status: t.String(),
               lastSeen: t.Date(),
@@ -844,7 +850,7 @@ export const UserSelect = t.Partial(
       email: t.Boolean(),
       phone: t.Boolean(),
       password: t.Boolean(),
-      name: t.Boolean(),
+      username: t.Boolean(),
       avatar: t.Boolean(),
       status: t.Boolean(),
       lastSeen: t.Boolean(),
@@ -906,7 +912,7 @@ export const UserOrderBy = t.Partial(
       password: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
-      name: t.Union([t.Literal("asc"), t.Literal("desc")], {
+      username: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
       avatar: t.Union([t.Literal("asc"), t.Literal("desc")], {

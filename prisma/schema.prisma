@@ -31,7 +31,7 @@ model User {
   email                   String?   @unique
   phone                   String?   @unique
   password                String
-  name                    String
+  username                String    @unique
   avatar                  String?
   status                  String? // online, offline, away, etc.
   lastSeen                DateTime? @default(now())
@@ -60,6 +60,7 @@ model User {
 
   @@index([lastSeen])
   @@index([status])
+  @@index([username])
 }
 
 model Contact {

@@ -52,7 +52,7 @@ export const ReadReceiptRelations = t.Object(
         email: __nullable__(t.String()),
         phone: __nullable__(t.String()),
         password: t.String(),
-        name: t.String(),
+        username: t.String(),
         avatar: __nullable__(t.String()),
         status: __nullable__(t.String()),
         lastSeen: __nullable__(t.Date()),

@@ -1,5 +1,6 @@
 import { logger } from "@tqman/nice-logger";
 import { Elysia } from "elysia";
+import auth from "./lib/plugins/auth";
 
 const app = new Elysia({ prefix: "/api/v1" })
   .use(
@@ -8,6 +9,7 @@ const app = new Elysia({ prefix: "/api/v1" })
       withTimestamp: true, // optional (default: false)
     })
   )
+  .use(auth)
   .get("/", () => "Hello Elysia")
   .listen(3000);
 
