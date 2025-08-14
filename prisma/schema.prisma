@@ -1,0 +1,294 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator prismabox {
+  provider                    = "prismabox"
+  typeboxImportDependencyName = "elysia"
+  typeboxImportVariableName   = "t"
+  inputModel                  = true
+  output                      = "../src/generated/prismabox"
+}
+
+/**
+ * Models
+ */
+
+model User {
+  id                      String    @id @default(cuid())
+  email                   String?   @unique
+  phone                   String?   @unique
+  password                String
+  name                    String
+  avatar                  String?
+  status                  String? // online, offline, away, etc.
+  lastSeen                DateTime? @default(now())
+  bio                     String?
+  verified                Boolean   @default(false)
+  verificationCode        String?
+  verificationCodeExpires DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  // Relationships
+  contacts  Contact[] @relation("userContacts")
+  contactOf Contact[] @relation("contactOfUser")
+
+  sentMessages     Message[] @relation("UserSentMessages")
+  receivedMessages Message[] @relation("UserReceivedMessages")
+
+  memberships Membership[]
+  ownedRooms  Room[]       @relation("roomOwner")
+
+  reactions      Reaction[]
+  notifications  Notification[]
+  attachments    Attachment[]
+  pinnedMessages PinnedMessage[]
+  readReceipts   ReadReceipt[]
+
+  @@index([lastSeen])
+  @@index([status])
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  userId    String
+  contactId String
+  name      String? // Custom name for the contact
+  createdAt DateTime @default(now())
+
+  // Relationships
+  user        User @relation("userContacts", fields: [userId], references: [id])
+  contactUser User @relation("contactOfUser", fields: [contactId], references: [id])
+
+  @@unique([userId, contactId])
+  @@index([userId])
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  name        String?
+  description String?
+  type        RoomType @default(PRIVATE) // PRIVATE, GROUP, CHANNEL
+  avatar      String?
+  ownerId     String? // Null for channels owned by system
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // denormalized counters for fast listing
+  messageCount  Int       @default(0)
+  lastMessageAt DateTime?
+
+  // Relationships
+  owner          User?           @relation("roomOwner", fields: [ownerId], references: [id])
+  members        Membership[]
+  messages       Message[] // messages in this room
+  pinnedMessages PinnedMessage[]
+
+  @@index([type])
+  @@index([ownerId])
+  @@index([lastMessageAt])
+}
+
+enum RoomType {
+  PRIVATE
+  GROUP
+  CHANNEL
+}
+
+model Membership {
+  id         String     @id @default(cuid())
+  userId     String
+  roomId     String
+  role       MemberRole @default(MEMBER) // OWNER, ADMIN, MEMBER
+  joinedAt   DateTime   @default(now())
+  mutedUntil DateTime?
+  lastReadAt DateTime?
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id])
+  room Room @relation(fields: [roomId], references: [id])
+
+  @@unique([userId, roomId])
+  @@index([roomId])
+  @@index([userId])
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+/**
+ * Message & MessageContent separation:
+ * - Message: hot metadata (fast queries for lists)
+ * - MessageContent: large text stored in separate table (read on-demand)
+ */
+model Message {
+  id         String        @id @default(cuid())
+  roomId     String
+  senderId   String
+  receiverId String? // optional: used for direct (1:1) messages
+  replyToId  String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  deleted    Boolean       @default(false)
+  deletedAt  DateTime?
+  status     MessageStatus @default(SENT)
+
+  // Lightweight relationships / counters
+  reactionsCount Int @default(0) // denormalized for fast UI badges
+
+  // Relationships
+  room         Room            @relation(fields: [roomId], references: [id])
+  sender       User            @relation("UserSentMessages", fields: [senderId], references: [id])
+  receiver     User?           @relation("UserReceivedMessages", fields: [receiverId], references: [id])
+  replyTo      Message?        @relation("MessageReplies", fields: [replyToId], references: [id])
+  replies      Message[]       @relation("MessageReplies")
+  reactions    Reaction[]
+  attachments  Attachment[]
+  readReceipts ReadReceipt[]
+  content      MessageContent? // one-to-one, content stored separately
+  pinnedIn     PinnedMessage[]
+
+  @@index([roomId, createdAt])
+  @@index([roomId, deleted, createdAt])
+  @@index([senderId, createdAt])
+  @@index([createdAt])
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+/**
+ * MessageContent: large text fields separated for performance
+ * - messageId uses the Message.id as the primary key (one-to-one)
+ * - use @db.Text for PostgreSQL text type
+ */
+model MessageContent {
+  messageId String    @id
+  body      String?   @db.Text
+  edited    Boolean   @default(false)
+  editedAt  DateTime?
+
+  message Message @relation(fields: [messageId], references: [id])
+
+  // Note: create a GIN full-text index on this column manually via SQL (see notes below)
+}
+
+/**
+ * Other supporting models
+ */
+
+model Reaction {
+  id        String   @id @default(cuid())
+  emoji     String
+  messageId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  // Relationships
+  message Message @relation(fields: [messageId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([userId])
+}
+
+model Attachment {
+  id        String         @id @default(cuid())
+  url       String
+  type      AttachmentType
+  name      String?
+  size      Int?
+  messageId String
+  userId    String
+  createdAt DateTime       @default(now())
+
+  // Relationships
+  message Message @relation(fields: [messageId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@index([messageId])
+  @@index([userId])
+}
+
+enum AttachmentType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  OTHER
+}
+
+model PinnedMessage {
+  id         String   @id @default(cuid())
+  messageId  String
+  roomId     String
+  pinnedById String
+  pinnedAt   DateTime @default(now())
+  note       String?
+
+  // Relationships
+  message  Message @relation(fields: [messageId], references: [id])
+  room     Room    @relation(fields: [roomId], references: [id])
+  pinnedBy User    @relation(fields: [pinnedById], references: [id])
+
+  @@unique([messageId, roomId])
+  @@index([roomId])
+}
+
+model ReadReceipt {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+
+  // Relationships
+  message Message @relation(fields: [messageId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([messageId, userId])
+  @@index([userId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  // Relationships
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, read, createdAt])
+}
+
+enum NotificationType {
+  MESSAGE
+  MENTION
+  INVITATION
+  SYSTEM
+}
