@@ -3,6 +3,7 @@ import { Elysia } from "elysia";
 import auth from "./lib/plugins/auth";
 import contact from "./lib/plugins/contact";
 import room from "./lib/plugins/room";
+import message from "./lib/plugins/message";
 
 const app = new Elysia({ prefix: "/api/v1" })
   .use(
@@ -14,6 +15,7 @@ const app = new Elysia({ prefix: "/api/v1" })
   .use(auth)
   .use(contact)
   .use(room)
+  .use(message)
   .get("/", () => "Hello Elysia")
   .listen(3000);
 
