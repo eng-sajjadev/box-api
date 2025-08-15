@@ -5,6 +5,8 @@ import contact from "./lib/plugins/contact";
 import room from "./lib/plugins/room";
 import message from "./lib/plugins/message";
 import swagger from "@elysiajs/swagger";
+import reaction from "./lib/plugins/reaction";
+import attachment from "./lib/plugins/attachment";
 
 const app = new Elysia({ prefix: "/api/v1" })
   .use(
@@ -18,6 +20,8 @@ const app = new Elysia({ prefix: "/api/v1" })
   .use(contact)
   .use(room)
   .use(message)
+  .use(reaction)
+  .use(attachment)
   .get("/", () => "Hello Elysia")
   .listen(process.env.PORT ?? 3000);
 
