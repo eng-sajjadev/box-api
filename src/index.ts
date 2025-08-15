@@ -8,6 +8,7 @@ import swagger from "@elysiajs/swagger";
 
 import attachment from "./lib/plugins/attachment";
 import root from "./lib/plugins/root";
+import reaction from "./lib/plugins/reaction";
 
 const app = new Elysia({ prefix: "/api/v0.2" })
   .use(
@@ -23,6 +24,7 @@ const app = new Elysia({ prefix: "/api/v0.2" })
   .use(room)
   .use(message)
   .use(attachment)
+  .use(reaction)
   .listen(process.env.PORT ?? 3000);
 
 console.log(
