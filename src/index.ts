@@ -8,7 +8,7 @@ import swagger from "@elysiajs/swagger";
 import reaction from "./lib/plugins/reaction";
 import attachment from "./lib/plugins/attachment";
 
-const app = new Elysia({ prefix: "/api/v1" })
+const app = new Elysia({ prefix: "/api/v0.2" })
   .use(
     logger({
       mode: "live", // "live" or "combined" (default: "combined")

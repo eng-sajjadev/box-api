@@ -8,7 +8,7 @@ interface JWTPayload {
   id: string;
   username?: string;
 }
-const SECRET = process.env.AUTH_SECRET_KEY ?? "dev-secret";
+const SECRET = Bun.env.AUTH_SECRET_KEY ?? "dev-secret";
 
 export const pinnedMessage = new Elysia({ prefix: "/pinned" })
   .use(bearer())

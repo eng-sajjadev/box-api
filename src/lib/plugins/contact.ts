@@ -12,7 +12,7 @@ const contact = new Elysia({ prefix: "/contact" })
   .use(
     jwt({
       name: "jwt",
-      secret: process.env.JWT_SECRET ?? "please-set-a-secret",
+      secret: Bun.env.AUTH_SECRET_KEY ?? "dev-secret",
     })
   )
   .use(bearer())

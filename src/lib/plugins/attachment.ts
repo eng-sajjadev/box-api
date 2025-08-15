@@ -9,7 +9,7 @@ interface JWTPayload {
   username?: string;
 }
 
-const SECRET = process.env.AUTH_SECRET_KEY ?? "dev-secret";
+const SECRET = Bun.env.AUTH_SECRET_KEY ?? "dev-secret";
 // Max allowed attachment size (bytes) — enforce at app level (50 MB default)
 const MAX_SIZE_BYTES = Number(
   process.env.MAX_ATTACHMENT_SIZE_BYTES ?? 50 * 1024 * 1024
